@@ -7,6 +7,7 @@ import Register from './components/auth/Register';
 import ResetPassword from './components/auth/ResetPassword';
 import PrivateRoute from './components/PrivateRoute';
 import ForgotPassword from './components/auth/ForgotPassword';
+import Dashboard from './components/Dashboard';
 
 function App() {
 
@@ -20,9 +21,11 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
 
-
-
         {/* RUTAS PRIVADAS */}
+        <Route element={<PrivateRoute />}>
+          <Route path="/dashboard" element={<Dashboard />} />
+        </Route>
+
 
       </Routes>
     </Router>

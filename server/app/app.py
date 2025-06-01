@@ -24,21 +24,35 @@ jwt_manager = JWTManager(app)
 @app.route('/dashboard')
 @jwt_required()
 def dashboard():
-    current_user_id = get_jwt_identity()
-    
-    user_data = db['users'].find_one({"_id": ObjectId(current_user_id)})
-    if not user_data:
-        return jsonify({"error": "Usuario no encontrado"}), 404
-    
-    return jsonify({
-        "success": True,
-        "message": "Bienvenido al dashboard",
-        "user": {
-            "id": str(user_data["_id"]),
-            "username": user_data["username"],
-            "email": user_data["email"]
-        }
-    }), 200
+    try:
+        current_user_id = get_jwt_identity()
+        
+        if not ObjectId.is_valid(current_user_id):
+            return jsonify({"success": False, "error": "ID de usuario no válido"}), 400
+        
+        user_data = db['users'].find_one(
+            {"_id": ObjectId(current_user_id)},
+            {"password_hash": 0}  
+        )
+        
+        if not user_data:
+            return jsonify({"success": False, "error": "Usuario no encontrado"}), 404
+        
+        return jsonify({
+            "success": True,
+            "user": {
+                "id": str(user_data["_id"]),
+                "username": user_data["username"],
+                "email": user_data["email"]
+            }
+        }), 200
+        
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": "Error interno del servidor",
+            "details": str(e)
+        }), 500
 
 @app.route('/users', methods=['GET'])
 def get_users():
