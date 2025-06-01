@@ -21,22 +21,19 @@ class User(UserMixin):
     def verify_password(self, password):
         return check_password_hash(self.password_hash, password)
 
-    def add_to_cart(self, book_id, quantity=1):
-        """Añade un libro al carrito"""
-        existing = next((item for item in self.cart if item["book_id"] == book_id), None)
+    def add_to_cart(self, product_id, quantity=1):
+        existing = next((item for item in self.cart if item["product_id"] == product_id), None)
         if existing:
             existing["quantity"] += quantity
         else:
-            self.cart.append({"book_id": book_id, "quantity": quantity})
+            self.cart.append({"product_id": product_id, "quantity": quantity})
 
-    def remove_from_cart(self, book_id):
-        """Elimina un libro del carrito"""
-        self.cart = [item for item in self.cart if item["book_id"] != book_id]
+    def remove_from_cart(self, product_id):
+        self.cart = [item for item in self.cart if item["product_id"] != product_id]
 
-    def add_to_wishlist(self, book_id):
-        """Añade a lista de deseos"""
-        if book_id not in self.wishlist:
-            self.wishlist.append(book_id)
+    def add_to_wishlist(self, product_id):
+        if product_id not in self.wishlist:
+            self.wishlist.append(product_id)
 
     def toDBCollection(self):
         return {
@@ -50,26 +47,50 @@ class User(UserMixin):
             "purchase_history": self.purchase_history,
             "created_at": self.created_at
         }
-        
-class Book:
-    def __init__(self, book_data):
-        self.id = str(book_data["_id"])
-        self.title = book_data["title"]
-        self.author = book_data["author"]
-        self.isbn = book_data["isbn"]
-        self.price = book_data["price"]
-        self.genre = book_data.get("genre", [])
-        self.cover_url = book_data.get("cover_url", "")
-        self.description = book_data.get("description", "")
-        self.stock = book_data.get("stock", 0)
-        
+
+
+class Product:
+    def __init__(self, product_data):
+        self.id = str(product_data["_id"])
+        self.title = product_data["title"]                 
+        self.description = product_data.get("description", "")
+        self.price = product_data["price"]
+        self.category = product_data.get("category", "general")
+        self.image_url = product_data.get("image_url", "")
+        self.stock = product_data.get("stock", 0)
+        self.metadata = product_data.get("metadata", {})  
+
+    def toDBCollection(self):
+        return {
+            "_id": ObjectId(self.id) if self.id else ObjectId(),
+            "title": self.title,
+            "description": self.description,
+            "price": self.price,
+            "category": self.category,
+            "image_url": self.image_url,
+            "stock": self.stock,
+            "metadata": self.metadata
+        }
+
 class Order:
     def __init__(self, order_data):
         self.id = str(order_data["_id"])
         self.user_id = order_data["user_id"]
-        self.items = order_data["items"]  
+        self.items = order_data["items"] 
         self.total = order_data["total"]
         self.shipping_address = order_data["shipping_address"]
         self.payment_method = order_data["payment_method"]
         self.status = order_data.get("status", "pending")
         self.created_at = order_data.get("created_at", datetime.utcnow())
+
+    def toDBCollection(self):
+        return {
+            "_id": ObjectId(self.id) if self.id else ObjectId(),
+            "user_id": self.user_id,
+            "items": self.items,
+            "total": self.total,
+            "shipping_address": self.shipping_address,
+            "payment_method": self.payment_method,
+            "status": self.status,
+            "created_at": self.created_at
+        }
