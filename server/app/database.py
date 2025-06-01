@@ -1,7 +1,7 @@
 from pymongo import MongoClient
 
 MONGO_URI = "mongodb://localhost:27017/"
-DATABASE_NAME = "bibliotecaCommerce"
+DATABASE_NAME = "tiendaGenerica"
 
 def dbConnect():
     try:

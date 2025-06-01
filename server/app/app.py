@@ -4,8 +4,9 @@ from dotenv import load_dotenv
 from flask import Flask, json, jsonify, request
 from flask_cors import CORS
 from werkzeug.exceptions import BadRequest, NotFound
-from flask_jwt_extended import JWTManager, get_jwt_identity, jwt_required
+from flask_jwt_extended import JWTManager, create_access_token, get_jwt_identity, jwt_required
 from werkzeug.security import generate_password_hash
+from werkzeug.security import check_password_hash
 import database as db
 from auth.routes import auth
 
@@ -118,53 +119,7 @@ def get_user(user_id):
         }), 500
 
         
-@app.route('/user', methods=['POST'])
-def create_user():
-    try:
-        if not request.is_json:
-            raise BadRequest("El request debe ser JSON (Content-Type: application/json)")
-        
-        data = request.get_json()
-        
-        required_fields = ['username', 'email', 'password']
-        missing_fields = [field for field in required_fields if field not in data]
-        
-        if missing_fields:
-            raise BadRequest(f"Faltan campos obligatorios: {', '.join(missing_fields)}")
 
-        if db['users'].find_one({'$or': [
-            {'username': data['username']},
-            {'email': data['email']}
-        ]}):
-            raise BadRequest("El nombre de usuario o email ya existe")
-
-        user_data = {
-            "_id": ObjectId(),
-            'username': data['username'],
-            'email': data['email'],
-            'password_hash': generate_password_hash(data['password'])
-        }
-        
-        result = db['users'].insert_one(user_data)
-        
-        return jsonify({
-            'success': True,
-            'message': 'Usuario creado exitosamente',
-            'user_id': str(result.inserted_id),
-            'username': data['username']
-        }), 201
-        
-    except BadRequest as e:
-        return jsonify({
-            'success': False,
-            'error': str(e)
-        }), 400
-    except Exception as e:
-        return jsonify({
-            'success': False,
-            'error': 'Error interno del servidor',
-            'details': str(e)
-        }), 500
 
 @app.route('/user/<user_id>', methods=['PUT'])
 def update_user(user_id):

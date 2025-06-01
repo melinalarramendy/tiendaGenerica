@@ -18,7 +18,7 @@ def login():
     try:
         data = request.get_json()
         if not data or 'email' not in data or 'password' not in data:
-            raise BadRequest("Faltan campos obligatorios: email, password")
+            raise BadRequest("Email y contraseña son requeridos")
 
         email = data['email']
         password = data['password']
@@ -26,28 +26,31 @@ def login():
         users_collection = db['users']
         user_data = users_collection.find_one({"email": email})
         if not user_data:
-            return jsonify({"error": "Credenciales inválidas"}), 401
+            return jsonify({"success": False, "error": "Credenciales inválidas"}), 401
 
-        user = User(user_data)
-        if not user.verify_password(password):
-            return jsonify({"error": "Credenciales inválidas"}), 401
+        from werkzeug.security import check_password_hash
+        if not check_password_hash(user_data['password_hash'], password):
+            return jsonify({"success": False, "error": "Credenciales inválidas"}), 401
 
-        access_token = create_access_token(identity=user.id)
-        refresh_token = create_refresh_token(identity=user.id)
+        access_token = create_access_token(identity=str(user_data['_id']))
+        refresh_token = create_refresh_token(identity=str(user_data['_id']))
 
         return jsonify({
             "success": True,
             "access_token": access_token,
             "refresh_token": refresh_token,
             "user": {
-                "id": user.id,
-                "username": user.username
+                "id": str(user_data['_id']),
+                "name": user_data.get('name', user_data.get('username')),  
+                "email": user_data['email']
             }
         }), 200
+
     except BadRequest as e:
-        return jsonify({"error": str(e)}), 400
+        return jsonify({"success": False, "error": str(e)}), 400
     except Exception as e:
-        return jsonify({"error": "Error interno del servidor", "details": str(e)}), 500
+        print(f"Error en login: {str(e)}")  
+        return jsonify({"success": False, "error": "Error interno del servidor"}), 500
 
 @auth.route('/logout', methods=['POST'])
 @login_required
