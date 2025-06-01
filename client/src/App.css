@@ -1,0 +1,98 @@
+/* Fondo general tipo hoja antigua */
+html, body, #root {
+  height: 100%;
+  margin: 0;
+}
+
+
+/* Tarjeta estilo vintage */
+.vintage-card {
+  background-color: #fcf8e3;
+  border: 2px solid #c0b283;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(102, 85, 57, 0.3);
+  font-family: 'Georgia', serif;
+}
+
+/* Header decorativo */
+.vintage-card-header {
+  background-color: #e7dcb6;
+  color: #5e4522;
+  font-weight: bold;
+  font-size: 18px;
+  border-bottom: 2px solid #c0b283;
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+}
+
+/* Título del formulario */
+.vintage-title {
+  font-family: 'Georgia', serif;
+  font-size: 26px;
+  color: #4a392f;
+  border-bottom: 1px solid #d5c08c;
+  padding-bottom: 8px;
+}
+
+/* Etiquetas estilo manuscrito */
+.vintage-label {
+  font-weight: bold;
+  color: #4a392f;
+}
+
+/* Inputs clásicos */
+.vintage-input {
+  background-color: #fffdf6;
+  border: 1px solid #c9b792;
+  border-radius: 6px;
+  color: #3e2c1b;
+  font-family: 'Georgia', serif;
+}
+
+.vintage-input:focus {
+  border-color: #a58e5c;
+  box-shadow: 0 0 5px #c8b17a;
+  outline: none;
+}
+
+/* Checkbox decorativo */
+.vintage-checkbox input[type="checkbox"] {
+  accent-color: #a58e5c;
+}
+
+/* Botón tipo antiguo */
+.vintage-button {
+  background-color: #c8b17a;
+  color: #3e2c1b;
+  border: none;
+  font-weight: bold;
+  font-family: 'Georgia', serif;
+  transition: background-color 0.3s ease;
+}
+
+.vintage-button:hover {
+  background-color: #b49d5e;
+}
+
+/* Links decorativos */
+.vintage-link {
+  color: #7b5e3e;
+  text-decoration: none;
+  font-style: italic;
+}
+
+.vintage-link:hover {
+  text-decoration: underline;
+  color: #5e4522;
+}
+
+/* Footer decorativo */
+.vintage-card-footer {
+  background-color: #f3e7c7;
+  border-top: 1px solid #c0b283;
+  text-align: center;
+  font-size: 14px;
+  color: #5e4522;
+  padding: 10px;
+}
