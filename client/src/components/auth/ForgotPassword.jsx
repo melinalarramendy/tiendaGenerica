@@ -18,19 +18,28 @@ const ForgotPassword = () => {
         setLoading(true);
 
         try {
-            await axios.post('http://localhost:5005/forgot-password', { email });
+            const response = await axios.post('/api/auth/request-reset', {
+                email: email.trim()
+            }, {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
             await Swal.fire({
                 icon: 'success',
                 title: 'Token enviado',
-                text: 'Revisa tu correo electrónico.',
+                text: response.data.message || 'Revisa tu correo electrónico.',
                 confirmButtonColor: '#3085d6'
             });
+
+            setToken(response.data.token || '');
             setStep(2);
         } catch (err) {
             await Swal.fire({
                 icon: 'error',
                 title: 'Error',
-                text: err.response?.data?.message || 'Error al enviar el token',
+                text: err.response?.data?.error || 'Error al enviar el token',
                 confirmButtonColor: '#d33'
             });
         } finally {
@@ -66,37 +75,27 @@ const ForgotPassword = () => {
         try {
             const response = await axios.post('/api/auth/reset-password', {
                 token: token.trim(),
-                newPassword: newPassword.trim(),
-                confirmPassword: confirmPassword.trim()
+                password: newPassword.trim() 
             }, {
                 headers: {
                     'Content-Type': 'application/json'
                 }
             });
 
-            if (response.data.success) {
-                await Swal.fire({
-                    icon: 'success',
-                    title: 'Contraseña actualizada',
-                    text: 'Redirigiendo al login...',
-                    confirmButtonColor: '#3085d6',
-                    timer: 1800,
-                    showConfirmButton: false
-                });
-                setTimeout(() => navigate('/login'), 1800);
-            } else {
-                await Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: response.data.message || 'Error al actualizar la contraseña',
-                    confirmButtonColor: '#d33'
-                });
-            }
+            await Swal.fire({
+                icon: 'success',
+                title: 'Contraseña actualizada',
+                text: 'Redirigiendo al login...',
+                confirmButtonColor: '#3085d6',
+                timer: 1800,
+                showConfirmButton: false
+            });
+            setTimeout(() => navigate('/login'), 1800);
         } catch (err) {
             await Swal.fire({
                 icon: 'error',
                 title: 'Error',
-                text: err.response?.data?.message || 'Error al enviar el token',
+                text: err.response?.data?.error || 'Error al actualizar la contraseña',
                 confirmButtonColor: '#d33'
             });
         } finally {

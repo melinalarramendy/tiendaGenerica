@@ -115,6 +115,9 @@ def refresh():
     
 @auth.route('/request-reset', methods=['POST'])
 def request_reset():
+    if request.method == 'OPTIONS':
+        return jsonify({"success": True}), 200
+        
     data = request.get_json()
     email = data.get('email')
 
@@ -130,23 +133,68 @@ def request_reset():
     reset_link = f"http://localhost:5173/reset-password/{token}"
     print(f"Enlace para restablecer contraseña: {reset_link}")  
 
-    return jsonify({"success": True, "message": "Enlace de restablecimiento enviado"}), 200
+    return jsonify({
+        "success": True, 
+        "message": "Enlace de restablecimiento enviado",
+        "token": token  
+    }), 200
+
 
 @auth.route('/reset-password', methods=['POST'])
 def reset_password():
+    if request.method == 'OPTIONS':
+        return jsonify({"success": True}), 200
+        
     data = request.get_json()
     token = data.get('token')
-    new_password = data.get('password')
+    password = data.get('password') 
+    if not token:
+        return jsonify({
+            "success": False,
+            "error": "Token es requerido",
+            "errorType": "missing_token"
+        }), 400
+
+    if not password or len(password) < 6:
+        return jsonify({
+            "success": False,
+            "error": "La contraseña debe tener al menos 6 caracteres",
+            "errorType": "invalid_password"
+        }), 400
 
     try:
-        user_id = get_jwt_identity() if token is None else decode_token(token)['sub']
+        decoded_token = decode_token(token)
+        user_id = decoded_token['sub']
+        
+        if not ObjectId.is_valid(user_id):
+            return jsonify({
+                "success": False,
+                "error": "ID de usuario no válido",
+                "errorType": "invalid_user_id"
+            }), 400
+
+        hashed_pw = generate_password_hash(password)
+        result = db['users'].update_one(
+            {"_id": ObjectId(user_id)},
+            {"$set": {"password_hash": hashed_pw}}
+        )
+
+        if result.modified_count == 0:
+            return jsonify({
+                "success": False,
+                "error": "No se pudo actualizar la contraseña",
+                "errorType": "update_failed"
+            }), 400
+
+        return jsonify({
+            "success": True,
+            "message": "Contraseña actualizada correctamente"
+        }), 200
+
     except Exception as e:
-        return jsonify({"error": "Token inválido o expirado"}), 401
-
-    hashed_pw = generate_password_hash(new_password)
-    result = db['users'].update_one(
-        {"_id": ObjectId(user_id)},
-        {"$set": {"password_hash": hashed_pw}}
-    )
-
-    return jsonify({"success": True, "message": "Contraseña actualizada correctamente"}), 200
+        return jsonify({
+            "success": False,
+            "error": "Token inválido o expirado",
+            "errorType": "invalid_token",
+            "details": str(e)
+        }), 401

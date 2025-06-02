@@ -35,10 +35,12 @@ const ResetPassword = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!validateForm()) return;
-        if (!token) {
+
+        if (!token || token.length < 30) { 
             await Swal.fire({
                 icon: 'error',
                 title: 'Token inválido o faltante',
+                text: 'Por favor solicita un nuevo enlace de recuperación',
                 confirmButtonColor: '#d33'
             });
             return;
@@ -47,9 +49,8 @@ const ResetPassword = () => {
         setIsSubmitting(true);
         try {
             const response = await axios.post('/api/auth/reset-password', {
-                token,
-                newPassword: formData.newPassword,
-                confirmPassword: formData.confirmPassword
+                token: token,
+                password: formData.newPassword  
             }, {
                 headers: {
                     'Content-Type': 'application/json'
@@ -59,59 +60,35 @@ const ResetPassword = () => {
             if (response.data.success) {
                 await Swal.fire({
                     icon: 'success',
-                    title: 'Contraseña actualizada',
-                    text: response.data.message,
+                    title: '¡Contraseña actualizada!',
+                    text: 'Redirigiendo al login...',
                     confirmButtonColor: '#3085d6',
                     timer: 1800,
                     showConfirmButton: false
                 });
                 setTimeout(() => navigate('/login'), 1800);
             } else {
-                await Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: response.data.message || 'Error desconocido',
-                    confirmButtonColor: '#d33'
-                });
+                throw new Error(response.data.message || 'Error al actualizar contraseña');
             }
         } catch (err) {
+            let errorMessage = 'Error al actualizar la contraseña';
+
             if (err.response) {
-                if (err.response.data.errorType === 'invalid_token') {
-                    await Swal.fire({
-                        icon: 'error',
-                        title: 'Token inválido o ha expirado',
-                        text: err.response.data.message || 'Solicita un nuevo token.',
-                        confirmButtonColor: '#d33'
-                    });
-                } else if (err.response.data.errorType === 'password_mismatch') {
-                    await Swal.fire({
-                        icon: 'error',
-                        title: 'Las contraseñas no coinciden',
-                        confirmButtonColor: '#d33'
-                    });
-                } else {
-                    await Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: err.response.data.message || 'Error del servidor',
-                        confirmButtonColor: '#d33'
-                    });
+                if (err.response.status === 401) {
+                    errorMessage = 'Token inválido o expirado. Solicita un nuevo enlace.';
+                } else if (err.response.data?.error) {
+                    errorMessage = err.response.data.error;
                 }
-            } else if (err.request) {
-                await Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'No se recibió respuesta del servidor',
-                    confirmButtonColor: '#d33'
-                });
             } else {
-                await Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Error al configurar la solicitud',
-                    confirmButtonColor: '#d33'
-                });
+                errorMessage = err.message || errorMessage;
             }
+
+            await Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: errorMessage,
+                confirmButtonColor: '#d33'
+            });
         } finally {
             setIsSubmitting(false);
         }
