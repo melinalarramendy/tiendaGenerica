@@ -9,6 +9,9 @@ from werkzeug.security import generate_password_hash
 from werkzeug.security import check_password_hash
 import database as db
 from auth.routes import auth
+from cart.routes import cart
+from wishlist.routes import wishlist
+
 
 load_dotenv()
 db = db.dbConnect()
@@ -16,6 +19,8 @@ db = db.dbConnect()
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'super-secret-key')
 app.register_blueprint(auth, url_prefix='/auth')
+app.register_blueprint(cart, url_prefix='/cart')
+app.register_blueprint(wishlist)
 
 CORS(app)
 
@@ -220,6 +225,23 @@ def delete_user(user_id):
             'details': str(e),
             'code': 500
         }), 500
+
+@app.route('/products', methods=['GET'])
+def get_products():
+    result = []
+    for prod in db['products'].find({"is_active": True}):
+        prod["_id"] = str(prod["_id"])
+        result.append(prod)
+    return jsonify(result), 200
+
+@app.route('/products/<product_id>', methods=['GET'])
+def get_product(product_id):
+    product = db['products'].find_one({"_id": ObjectId(product_id), "is_active": True})
+    if not product:
+        return jsonify({"error": "Producto no encontrado"}), 404
+
+    product["_id"] = str(product["_id"])
+    return jsonify(product), 200
 
 if __name__ == '__main__':
     app.run(debug=True, port=5005)
