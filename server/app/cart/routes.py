@@ -48,6 +48,35 @@ def add_to_cart():
 
     return jsonify({"message": "Producto agregado al carrito"}), 200
 
+@cart.route('/update', methods=['PUT'])
+@jwt_required()
+def update_cart_item():
+    data = request.get_json()
+    product_id = data.get("product_id")
+    quantity_change = data.get("quantity", 0) 
+
+    user = get_current_user()
+    
+    item_index = next((i for i, item in enumerate(user.cart) 
+                      if item["product_id"] == product_id), None)
+    
+    if item_index is not None:
+        new_quantity = user.cart[item_index]["quantity"] + quantity_change
+        
+        if new_quantity <= 0:
+            user.cart.pop(item_index)
+        else:
+            user.cart[item_index]["quantity"] = new_quantity
+        
+        db['users'].update_one(
+            {"_id": ObjectId(user.id)},
+            {"$set": {"cart": user.cart}}
+        )
+        
+        return jsonify({"message": "Carrito actualizado"}), 200
+    
+    return jsonify({"message": "Producto no encontrado en el carrito"}), 404
+
 
 @cart.route('/remove/<product_id>', methods=['DELETE'])
 @jwt_required()

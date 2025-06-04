@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import NavbarTienda from './NavbarTienda';
+import Swal from 'sweetalert2';
 import {
     Container,
     Spinner,
@@ -17,6 +18,15 @@ import {
 import axios from 'axios';
 import { FaShoppingCart, FaHeart, FaStar, FaRegStar } from 'react-icons/fa';
 
+const Toast = Swal.mixin({
+    toast: true,
+    position: 'top-end',
+    showConfirmButton: false,
+    timer: 1800,
+    timerProgressBar: true
+});
+
+
 const ProductDetail = () => {
     const { productId } = useParams();
     const navigate = useNavigate();
@@ -24,6 +34,7 @@ const ProductDetail = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [mainImage, setMainImage] = useState('');
+    const [addedToCart, setAddedToCart] = useState(false);
 
     const isAuthenticated = localStorage.getItem('token') !== null;
 
@@ -41,7 +52,38 @@ const ProductDetail = () => {
     }, [productId]);
 
     const handleAddToCart = () => {
-        console.log('Producto agregado al carrito:', product);
+        const token = localStorage.getItem('token');
+        if (!token) {
+            navigate('/login', { state: { from: `/product/${productId}` } });
+            return;
+        }
+
+        axios.post('/api/cart/add', {
+            product_id: product._id,
+            quantity: 1
+        }, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        })
+            .then(() => {
+                setAddedToCart(true);
+                Toast.fire({
+                    icon: 'success',
+                    title: 'Producto agregado al carrito'
+                });
+
+                window.dispatchEvent(new CustomEvent('cartUpdated'));
+
+                setTimeout(() => setAddedToCart(false), 3000);
+            })
+            .catch((err) => {
+                console.error('Error al agregar al carrito:', err);
+                Toast.fire({
+                    icon: 'error',
+                    title: 'Hubo un problema al agregar al carrito',
+                });
+            });
     };
 
     const handleBuyNow = () => {
@@ -180,13 +222,14 @@ const ProductDetail = () => {
                                         Comprar ahora
                                     </Button>
                                     <Button
-                                        variant="outline-primary"
+                                        variant={addedToCart ? "success" : "outline-primary"}
                                         size="lg"
                                         className="flex-grow-1"
                                         onClick={handleAddToCart}
+                                        disabled={addedToCart}
                                     >
                                         <FaShoppingCart className="me-2" />
-                                        Añadir al carrito
+                                        {addedToCart ? "Agregado" : "Añadir al carrito"}
                                     </Button>
                                 </div>
                             </Card.Body>

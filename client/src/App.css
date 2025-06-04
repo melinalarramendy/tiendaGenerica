@@ -1,0 +1,11 @@
+.offcanvas {
+  transition: transform 0.3s ease-in-out;
+}
+
+.cart-item:hover .delete-btn {
+  opacity: 1;
+}
+.delete-btn {
+  opacity: 0;
+  transition: opacity 0.2s;
+}

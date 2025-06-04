@@ -20,7 +20,7 @@ app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'super-secret-key')
 app.register_blueprint(auth, url_prefix='/auth')
 app.register_blueprint(cart, url_prefix='/cart')
-app.register_blueprint(wishlist)
+app.register_blueprint(wishlist , url_prefix='/wishlist')
 
 CORS(app)
 
