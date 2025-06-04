@@ -8,6 +8,8 @@ import ResetPassword from './components/auth/ResetPassword';
 import PrivateRoute from './components/PrivateRoute';
 import ForgotPassword from './components/auth/ForgotPassword';
 import Dashboard from './components/Dashboard';
+import HomePage from './components/HomePage';
+import ProductDetail from './components/ProductDetail';
 
 function App() {
 
@@ -15,7 +17,8 @@ function App() {
     <Router>
       <Routes>
         {/* RUTAS PUBLICAS */}
-        <Route path="/" element={<Login />} />
+        <Route path="/" element={<HomePage />} />
+        <Route path="/product/:productId" element={<ProductDetail />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
