@@ -19,6 +19,8 @@ const NavbarTienda = () => {
   const [showCart, setShowCart] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const [wishlistItems, setWishlistItems] = useState([]);
+  const [showWishlist, setShowWishlist] = useState(false);
 
   const fetchCart = async (token) => {
     try {
@@ -44,6 +46,80 @@ const NavbarTienda = () => {
       }
     }
   };
+
+  const fetchWishlist = async (token) => {
+    try {
+      const res = await axios.get('/api/wishlist/', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setWishlistItems(res.data);
+    } catch (err) {
+      console.error("Error al obtener la wishlist:", err);
+      if (err.response?.status === 401) {
+        localStorage.removeItem('token');
+        setIsLoggedIn(false);
+      }
+    }
+  };
+
+  const handleRemoveFromWishlist = async (productId) => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    try {
+      await axios.delete(`/api/wishlist/remove/${productId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      Toast.fire({
+        icon: 'success',
+        title: 'Eliminado de tu lista de deseos'
+      });
+      window.dispatchEvent(new CustomEvent('wishlistUpdated'));
+    } catch (err) {
+      console.error("Error al eliminar de wishlist:", err);
+      Toast.fire({
+        icon: 'error',
+        title: 'Error al eliminar de lista de deseos'
+      });
+    }
+  };
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const loggedIn = !!token;
+    setIsLoggedIn(loggedIn);
+
+    if (loggedIn) {
+      fetchCart(token);
+      fetchWishlist(token);
+    } else {
+      setCartCount(0);
+      setCartItems([]);
+      setWishlistItems([]);
+    }
+  }, [location]);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const loggedIn = !!token;
+    setIsLoggedIn(loggedIn);
+
+    const handleCartUpdate = () => loggedIn && fetchCart(token);
+    const handleWishlistUpdate = () => loggedIn && fetchWishlist(token);
+
+    window.addEventListener('cartUpdated', handleCartUpdate);
+    window.addEventListener('wishlistUpdated', handleWishlistUpdate);
+
+    if (loggedIn) {
+      fetchCart(token);
+      fetchWishlist(token);
+    }
+
+    return () => {
+      window.removeEventListener('cartUpdated', handleCartUpdate);
+      window.removeEventListener('wishlistUpdated', handleWishlistUpdate);
+    };
+  }, [location]);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -208,6 +284,25 @@ const NavbarTienda = () => {
           </Dropdown>
 
           <Nav.Link
+            href="#"
+            className="text-dark ms-2 position-relative"
+            onClick={(e) => { e.preventDefault(); setShowWishlist(true); }}
+          >
+            <i className="bi bi-heart fs-5"></i>
+            {wishlistItems.length > 0 && (
+              <Badge bg="danger" pill className="position-absolute top-0 start-100 translate-middle">
+                {wishlistItems.length}
+              </Badge>
+            )}
+          </Nav.Link>
+
+          <Nav.Link
+            href="/cart"
+            className="text-dark ms-2 position-relative"
+            onClick={handleCartClick}
+          ></Nav.Link>
+
+          <Nav.Link
             href="/cart"
             className="text-dark ms-2 position-relative"
             onClick={handleCartClick}
@@ -317,13 +412,85 @@ const NavbarTienda = () => {
                       className="w-100"
                       onClick={() => {
                         handleCloseCart();
-                        navigate('/checkout'); 
+                        navigate('/checkout');
                       }}
                       disabled={cartItems.length === 0}
                     >
                       Comprar ahora
                     </Button>
                   </div>
+                </div>
+              </div>
+            )}
+          </Offcanvas.Body>
+        </Offcanvas>
+
+        <Offcanvas
+          show={showWishlist}
+          onHide={() => setShowWishlist(false)}
+          placement="end"
+          style={{ width: '350px' }}
+        >
+          <Offcanvas.Header closeButton>
+            <Offcanvas.Title>
+              <i className="bi bi-heart me-2"></i>
+              Mi Lista de Deseos ({wishlistItems.length})
+            </Offcanvas.Title>
+          </Offcanvas.Header>
+          <Offcanvas.Body>
+            {wishlistItems.length === 0 ? (
+              <div className="text-center py-4">
+                <i className="bi bi-heart fs-1 text-muted"></i>
+                <p className="mt-3">Tu lista de deseos está vacía</p>
+                <Button
+                  variant="primary"
+                  onClick={() => {
+                    setShowWishlist(false);
+                    navigate('/');
+                  }}
+                >
+                  Explorar productos
+                </Button>
+              </div>
+            ) : (
+              <div className="d-flex flex-column h-100">
+                <div className="flex-grow-1 overflow-auto">
+                  {wishlistItems.map((item, index) => (
+                    <div key={index} className="d-flex mb-3 border-bottom pb-3 position-relative">
+                      <img
+                        src={item.main_image}
+                        alt={item.name}
+                        className="rounded me-3"
+                        style={{ width: '60px', height: '60px', objectFit: 'cover' }}
+                        onClick={() => {
+                          setShowWishlist(false);
+                          navigate(`/product/${item._id}`);
+                        }}
+                      />
+                      <div className="flex-grow-1">
+                        <h6
+                          className="mb-1"
+                          onClick={() => {
+                            setShowWishlist(false);
+                            navigate(`/product/${item._id}`);
+                          }}
+                          style={{ cursor: 'pointer' }}
+                        >
+                          {item.name}
+                        </h6>
+                        <strong>${item.price.toFixed(2)}</strong>
+                      </div>
+                      <Button
+                        variant="outline-danger"
+                        size="sm"
+                        className="position-absolute top-0 end-0 mt-1 me-1"
+                        onClick={() => handleRemoveFromWishlist(item._id)}
+                        title="Eliminar de lista de deseos"
+                      >
+                        <i className="bi bi-trash"></i>
+                      </Button>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
