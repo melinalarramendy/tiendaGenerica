@@ -43,7 +43,7 @@ Flask==3.1.0
 Flask-JWT-Extended==4.7.1
 Flask-SQLAlchemy==3.1.1
 Flask-CORS==5.0.1
-PyMongo==4.6.2 (opcional)
+PyMongo==4.6.2
 
 ## 📌 Notas del proyecto
 

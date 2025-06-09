@@ -11,6 +11,7 @@ import ForgotPassword from './components/auth/ForgotPassword';
 import Dashboard from './components/Dashboard';
 import HomePage from './components/HomePage';
 import ProductDetail from './components/ProductDetail';
+import CategoryPage from './components/CategoryPage';
 
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
         {/* RUTAS PUBLICAS */}
         <Route path="/" element={<HomePage />} />
         <Route path="/product/:productId" element={<ProductDetail />} />
+        <Route path="/category/:categoryName" element={<CategoryPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />

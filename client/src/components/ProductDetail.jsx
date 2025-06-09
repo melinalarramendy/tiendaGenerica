@@ -196,7 +196,7 @@ const ProductDetail = () => {
             <Container className="my-5 product-detail-container">
                 <Breadcrumb className="mb-4">
                     <Breadcrumb.Item href="/">Inicio</Breadcrumb.Item>
-                    <Breadcrumb.Item href={`/category/${product.category}`}>
+                    <Breadcrumb.Item href={`/category/${product.category.toLowerCase().replace(/\s+/g, '-')}`}>
                         {product.category}
                     </Breadcrumb.Item>
                     <Breadcrumb.Item active>{product.title}</Breadcrumb.Item>

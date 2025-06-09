@@ -243,5 +243,26 @@ def get_product(product_id):
     product["_id"] = str(product["_id"])
     return jsonify(product), 200
 
+@app.route('/products/category/<category_name>', methods=['GET'])
+def get_products_by_category(category_name):
+    try:
+        category_title = category_name.replace('-', ' ').title()
+        
+        products = list(db['products'].find({
+            "category": {"$regex": f"^{category_title}$", "$options": "i"},
+            "is_active": True
+        }).limit(50))  
+        
+        for prod in products:
+            prod["_id"] = str(prod["_id"])
+            
+        return jsonify({
+            "category": category_title,
+            "products": products,
+            "count": len(products)
+        }), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 if __name__ == '__main__':
     app.run(debug=True, port=5005)
