@@ -32,13 +32,13 @@ Plantilla genérica para ecommerce con backend en Flask y frontend en React, dis
 
 ## 📦 Dependencias principales
 
-# Frontend
+### Frontend
 "react": "^19.1.0",
 "react-bootstrap": "^2.10.10",
 "axios": "^1.9.0",
 "react-router-dom": "^7.6.1"
 
-# Backend
+### Backend
 Flask==3.1.0
 Flask-JWT-Extended==4.7.1
 Flask-SQLAlchemy==3.1.1
