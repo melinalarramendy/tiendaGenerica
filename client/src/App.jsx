@@ -12,6 +12,9 @@ import Dashboard from './components/Dashboard';
 import HomePage from './components/HomePage';
 import ProductDetail from './components/ProductDetail';
 import CategoryPage from './components/CategoryPage';
+import ComoComprar from './components/ComoComprar';
+import Devoluciones from './components/Devoluciones';
+import Contacto from './components/Contacto';
 
 
 function App() {
@@ -27,6 +30,9 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
+        <Route path="/comocomprar" element={<ComoComprar />} />
+        <Route path="/devoluciones" element={<Devoluciones />} />
+        <Route path="/contacto" element={<Contacto />}  />
 
         {/* RUTAS PRIVADAS */}
         <Route element={<PrivateRoute />}>

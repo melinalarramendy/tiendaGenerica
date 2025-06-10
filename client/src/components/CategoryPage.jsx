@@ -234,6 +234,7 @@ const CategoryPage = () => {
                     </Row>
                 )}
             </Container>
+            <Footer />
         </>
     );
 };

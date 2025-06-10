@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Container, Spinner, Alert } from 'react-bootstrap';
 import CategorySlider from './CategorySlider';
 import NavbarTienda from './NavbarTienda';
+import Footer from './Footer';
 import axios from 'axios';
 
 const HomePage = () => {
@@ -47,6 +48,8 @@ const HomePage = () => {
         ))
       )}
     </Container>
+
+    <Footer />
     
     </>
     

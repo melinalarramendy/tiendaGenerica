@@ -412,6 +412,7 @@ const ProductDetail = () => {
                     </Row>
                 )}
             </Container>
+            <Footer />
         </>
 
     );
