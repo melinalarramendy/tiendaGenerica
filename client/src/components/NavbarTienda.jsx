@@ -21,6 +21,9 @@ const NavbarTienda = () => {
   const location = useLocation();
   const [wishlistItems, setWishlistItems] = useState([]);
   const [showWishlist, setShowWishlist] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [showSearchResults, setShowSearchResults] = useState(false);
 
   const fetchCart = async (token) => {
     try {
@@ -240,7 +243,65 @@ const NavbarTienda = () => {
       });
       fetchCart(token);
     }
+
   };
+
+  const searchProducts = async (query) => {
+    if (!query.trim()) {
+      setSearchResults([]);
+      setShowSearchResults(false);
+      return;
+    }
+
+    try {
+      const response = await axios.get(`/api/products/search?q=${encodeURIComponent(query)}`);
+      setSearchResults(response.data);
+      setShowSearchResults(true);
+    } catch (error) {
+      console.error("Error al buscar productos:", error);
+      Toast.fire({
+        icon: 'error',
+        title: 'Error al buscar productos'
+      });
+    }
+  };
+
+  const handleSearchChange = (e) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+
+    const timer = setTimeout(() => {
+      searchProducts(query);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  };
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
+      setShowSearchResults(false);
+      setSearchQuery('');
+    }
+  };
+
+  const handleResultClick = (productId) => {
+    navigate(`/product/${productId}`);
+    setShowSearchResults(false);
+    setSearchQuery('');
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (e.target.closest('.search-container') === null) {
+        setShowSearchResults(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   return (
     <BootstrapNavbar bg="white" expand="lg" className="shadow-sm py-3">
@@ -249,13 +310,51 @@ const NavbarTienda = () => {
           Logo
         </BootstrapNavbar.Brand>
 
-        <div className="d-none d-lg-flex flex-grow-1 mx-4 justify-content-center">
-          <InputGroup style={{ maxWidth: '600px', width: '100%' }}>
-            <FormControl placeholder="Buscar productos" className="border-end-0" />
-            <Button variant="secondary" className="px-3">
-              <i className="bi bi-search"></i>
-            </Button>
-          </InputGroup>
+        <div className="d-none d-lg-flex flex-grow-1 mx-4 justify-content-center position-relative search-container">
+          <form onSubmit={handleSearchSubmit} style={{ maxWidth: '600px', width: '100%' }}>
+            <InputGroup>
+              <FormControl
+                placeholder="Buscar productos"
+                className="border-end-0"
+                value={searchQuery}
+                onChange={handleSearchChange}
+                onFocus={() => searchQuery && setShowSearchResults(true)}
+              />
+              <Button variant="secondary" className="px-3" type="submit">
+                <i className="bi bi-search"></i>
+              </Button>
+            </InputGroup>
+
+
+            {showSearchResults && searchResults.length > 0 && (
+              <div className="position-absolute top-100 start-0 end-0 bg-white shadow-lg mt-1 rounded z-3">
+                <div className="p-2 border-bottom">
+                  <small className="text-muted">{searchResults.length} resultados encontrados</small>
+                </div>
+                <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                  {searchResults.map((product) => (
+                    <div
+                      key={product._id}
+                      className="p-3 border-bottom d-flex align-items-center hover-bg-light"
+                      style={{ cursor: 'pointer' }}
+                      onClick={() => handleResultClick(product._id)}
+                    >
+                      <img
+                        src={product.main_image}
+                        alt={product.title}
+                        className="me-3"
+                        style={{ width: '40px', height: '40px', objectFit: 'cover' }}
+                      />
+                      <div>
+                        <div className="fw-bold">{product.title}</div>
+                        <div className="text-muted small">${product.price.toFixed(2)}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </form>
         </div>
 
         <Nav className="ms-auto align-items-center">

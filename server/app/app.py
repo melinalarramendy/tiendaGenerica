@@ -263,6 +263,33 @@ def get_products_by_category(category_name):
         }), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+@app.route('/products/search', methods=['GET'])
+def search_products():
+    query = request.args.get('q', '').strip()
+    if not query:
+        return jsonify([]), 200
+
+    try:
+        regex_query = {'$regex': f'.*{query}.*', '$options': 'i'}
+        
+        products = list(db['products'].find({
+            '$and': [
+                {'is_active': True},
+                {'$or': [
+                    {'title': regex_query},
+                    {'description': regex_query},
+                    {'category': regex_query}
+                ]}
+            ]
+        }).limit(10))  
+
+        for prod in products:
+            prod["_id"] = str(prod["_id"])
+            
+        return jsonify(products), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True, port=5005)

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import NavbarTienda from './NavbarTienda';
+import Footer from './Footer';
 import Swal from 'sweetalert2';
 import {
     Container,

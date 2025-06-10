@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import NavbarTienda from './NavbarTienda';
+import Footer from './Footer';
 import {
     Container,
     Row,
