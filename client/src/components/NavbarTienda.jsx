@@ -447,15 +447,17 @@ const NavbarTienda = () => {
               <div className="d-flex flex-column h-100">
                 <div className="flex-grow-1 overflow-auto">
                   {cartItems.map((item, index) => (
-                    <div key={index} className="d-flex mb-3 border-bottom pb-3 position-relative">
+                    <div key={index} className="d-flex mb-3 border-bottom pb-3 cart-item-container">
                       <img
                         src={item.product.main_image}
-                        alt={item.product.name}
+                        alt={item.product.title}
                         className="rounded me-3"
                         style={{ width: '60px', height: '60px', objectFit: 'cover' }}
                       />
                       <div className="flex-grow-1">
-                        <h6 className="mb-1">{item.product.name}</h6>
+                        <h6 className="mb-1 cart-item-title" title={item.product.title}>
+                          {item.product.title}
+                        </h6>
                         <div className="d-flex flex-column">
                           <div className="d-flex align-items-center mb-1">
                             <span className="text-muted me-2">Cantidad: {item.quantity}</span>
@@ -477,7 +479,7 @@ const NavbarTienda = () => {
                       <Button
                         variant="outline-danger"
                         size="sm"
-                        className="position-absolute top-0 end-0 mt-1 me-1"
+                        className="delete-btn"
                         onClick={() => handleRemoveItem(item.product._id, true)}
                         title="Eliminar todo"
                       >
@@ -555,10 +557,10 @@ const NavbarTienda = () => {
               <div className="d-flex flex-column h-100">
                 <div className="flex-grow-1 overflow-auto">
                   {wishlistItems.map((item, index) => (
-                    <div key={index} className="d-flex mb-3 border-bottom pb-3 position-relative">
+                    <div key={index} className="d-flex mb-3 border-bottom pb-3 wishlist-item-container">
                       <img
                         src={item.main_image}
-                        alt={item.name}
+                        alt={item.title}
                         className="rounded me-3"
                         style={{ width: '60px', height: '60px', objectFit: 'cover' }}
                         onClick={() => {
@@ -568,21 +570,21 @@ const NavbarTienda = () => {
                       />
                       <div className="flex-grow-1">
                         <h6
-                          className="mb-1"
+                          className="mb-1 wishlist-item-title"
+                          title={item.title}
                           onClick={() => {
                             setShowWishlist(false);
                             navigate(`/product/${item._id}`);
                           }}
-                          style={{ cursor: 'pointer' }}
                         >
-                          {item.name}
+                          {item.title}
                         </h6>
                         <strong>${item.price.toFixed(2)}</strong>
                       </div>
                       <Button
                         variant="outline-danger"
                         size="sm"
-                        className="position-absolute top-0 end-0 mt-1 me-1"
+                        className="delete-btn"
                         onClick={() => handleRemoveFromWishlist(item._id)}
                         title="Eliminar de lista de deseos"
                       >
