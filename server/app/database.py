@@ -15,7 +15,9 @@ def dbConnect():
     serverSelectionTimeoutMS=5000
 )
         print("Conexión exitosa a la base de datos")
-        return client[DATABASE_NAME]
+        db = client[DATABASE_NAME]
+        
+        return db
     except ConnectionError as e:
         print(f"Error al conectar a la base de datos: {e}")
         raise

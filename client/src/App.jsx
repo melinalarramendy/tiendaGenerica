@@ -15,6 +15,8 @@ import CategoryPage from './components/CategoryPage';
 import ComoComprar from './components/ComoComprar';
 import Devoluciones from './components/Devoluciones';
 import Contacto from './components/Contacto';
+import Checkout from './components/Checkout';
+import OrderDetail from './components/OrderDetail';
 
 
 function App() {
@@ -37,6 +39,8 @@ function App() {
         {/* RUTAS PRIVADAS */}
         <Route element={<PrivateRoute />}>
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/orders/:orderId" element={<OrderDetail />} />
         </Route>
 
 

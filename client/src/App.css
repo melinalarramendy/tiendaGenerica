@@ -530,3 +530,85 @@
 .delete-btn:hover {
   opacity: 1;
 }
+
+.checkout-container {
+  padding-top: 2rem;
+  padding-bottom: 4rem;
+}
+
+.checkout-summary {
+  top: 1rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+}
+
+.checkout-summary .card-body {
+  padding: 1.5rem;
+}
+
+.checkout-products-list {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.checkout-product-item {
+  padding: 0.5rem;
+}
+
+.checkout-product-image img {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+  border: 1px solid #eee;
+  border-radius: 0.25rem;
+}
+
+.shipping-methods,
+.payment-methods {
+  border: 1px solid #dee2e6;
+  border-radius: 0.25rem;
+  padding: 0.5rem;
+}
+
+.accepted-cards img {
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.accepted-cards img:hover {
+  opacity: 1;
+}
+
+.checkout-success-icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto;
+  background-color: #28a745;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+}
+
+.checkout-success-icon svg {
+  margin-bottom: 5px;
+}
+
+.accordion-button:not(.collapsed) {
+  background-color: #f8f9fa;
+  color: #212529;
+}
+
+.accordion-button:focus {
+  box-shadow: none;
+  border-color: rgba(0,0,0,.125);
+}
+
+@media (max-width: 991.98px) {
+  .checkout-summary {
+    position: static;
+    margin-top: 2rem;
+  }
+}
