@@ -8,6 +8,7 @@ class User(UserMixin):
         self.username = user_data["username"]
         self.email = user_data["email"]
         self.password_hash = user_data["password_hash"]
+        self.role = user_data.get("role", "user")
         self.address = user_data.get("address", {})
         self.cart = user_data.get("cart", [])
         self.wishlist = user_data.get("wishlist", [])
@@ -19,6 +20,9 @@ class User(UserMixin):
 
     def verify_password(self, password):
         return check_password_hash(self.password_hash, password)
+    
+    def is_admin(self):
+        return self.role == "admin"
 
     def add_to_cart(self, product_id, quantity=1):
         existing = next((item for item in self.cart if item["product_id"] == product_id), None)
@@ -52,6 +56,7 @@ class User(UserMixin):
             "username": self.username,
             "email": self.email,
             "password_hash": self.password_hash,
+            "role": self.role,
             "address": self.address,
             "cart": self.cart,
             "wishlist": self.wishlist,

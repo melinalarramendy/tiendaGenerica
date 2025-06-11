@@ -92,6 +92,16 @@ const Dashboard = () => {
                                             </Card>
                                         </Col>
                                     </Row>
+                                    <Row>
+                                        <Col>
+                                            <Card className="bg-light">
+                                                <Card.Body>
+                                                    <Card.Subtitle className="mb-2">Rol</Card.Subtitle>
+                                                    <Card.Text style={{ fontSize: '1rem' }}>{user.role}</Card.Text>
+                                                </Card.Body>
+                                            </Card>
+                                        </Col>
+                                    </Row>
                                     <div className="text-center mt-4">
                                         <Button variant="outline-primary" onClick={() => {
                                             localStorage.removeItem('token');

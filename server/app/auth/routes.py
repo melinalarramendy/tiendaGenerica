@@ -69,6 +69,7 @@ def register():
         email = data["email"].strip().lower()
         username = data["username"].strip()
         password = data["password"]
+        role = "user" 
 
         email_regex = r'^[\w\.-]+@[\w\.-]+\.\w+$'
         if not re.match(email_regex, email):
@@ -85,7 +86,8 @@ def register():
         user_data = {
             "username": username,
             "email": email,
-            "password_hash": hashed_pw
+            "password_hash": hashed_pw,
+            "role": role
         }
 
         result = users_collection.insert_one(user_data)

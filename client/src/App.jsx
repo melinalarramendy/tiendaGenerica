@@ -17,6 +17,9 @@ import Devoluciones from './components/Devoluciones';
 import Contacto from './components/Contacto';
 import Checkout from './components/Checkout';
 import OrderDetail from './components/OrderDetail';
+import AdminRoute from './components/AdminRoute';
+import AdminPanel from './components/admin/AdminPanel';
+import ProductForm from './components/admin/ProductForm';
 
 
 function App() {
@@ -34,7 +37,7 @@ function App() {
         <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="/comocomprar" element={<ComoComprar />} />
         <Route path="/devoluciones" element={<Devoluciones />} />
-        <Route path="/contacto" element={<Contacto />}  />
+        <Route path="/contacto" element={<Contacto />} />
 
         {/* RUTAS PRIVADAS */}
         <Route element={<PrivateRoute />}>
@@ -43,6 +46,14 @@ function App() {
           <Route path="/orders/:orderId" element={<OrderDetail />} />
         </Route>
 
+        {/* RUTAS ADMIN */}
+
+        <Route element={<AdminRoute />}>
+          <Route path="/admin" element={<AdminPanel />} />
+          <Route path="/admin/products/new" element={<ProductForm />} />
+          <Route path="/admin/products/edit/:id" element={<ProductForm />} />
+
+        </Route>
 
       </Routes>
     </Router>
