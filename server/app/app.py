@@ -458,6 +458,20 @@ def delete_product(product_id):
 
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
+    
+@app.route('/admin/user/<user_id>/orders', methods=['GET'])
+@admin_required
+def get_user_orders(user_id):
+    try:
+        if not ObjectId.is_valid(user_id):
+            return jsonify({"success": False, "error": "ID de usuario no válido"}), 400
+
+        orders = list(db['orders'].find({"user_id": user_id}))
+        for order in orders:
+            order['_id'] = str(order['_id'])
+        return jsonify({"success": True, "orders": orders}), 200
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True, port=5005)
