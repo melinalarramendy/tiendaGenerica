@@ -1,31 +1,33 @@
 import React, { useEffect, useState } from 'react';
-import { 
-    useParams, 
-    useNavigate 
+import {
+    useParams,
+    useNavigate
 } from 'react-router-dom';
-import { 
-    Container, 
-    Card, 
-    Table, 
-    Spinner, 
-    Alert, 
+import {
+    Container,
+    Card,
+    Table,
+    Spinner,
+    Alert,
     Badge,
     Button,
     ListGroup,
     Tab,
     Row,
     Col,
+    Modal,
+    Form,
     Tabs
 } from 'react-bootstrap';
 import axios from 'axios';
 import Swal from 'sweetalert2';
-import { 
-    FaUser, 
-    FaShoppingBag, 
-    FaHistory, 
-    FaEnvelope, 
-    FaHome, 
-    FaPhone, 
+import {
+    FaUser,
+    FaShoppingBag,
+    FaHistory,
+    FaEnvelope,
+    FaHome,
+    FaPhone,
     FaEdit,
     FaArrowLeft
 } from 'react-icons/fa';
@@ -50,6 +52,10 @@ const AdminUserDetail = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [activeTab, setActiveTab] = useState('profile');
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [selectedUser, setSelectedUser] = useState(null);
+    const [editForm, setEditForm] = useState({ username: '', email: '', role: '' });
+    const [saving, setSaving] = useState(false);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -63,7 +69,7 @@ const AdminUserDetail = () => {
                         headers: { Authorization: `Bearer ${token}` }
                     })
                 ]);
-                
+
                 setUser(userRes.data.user);
                 setOrders(ordersRes.data.orders);
             } catch (err) {
@@ -101,6 +107,42 @@ const AdminUserDetail = () => {
         return <Badge bg={statusMap[status] || 'secondary'}>{status}</Badge>;
     };
 
+    const handleEditClick = (user) => {
+        setSelectedUser(user);
+        setEditForm({
+            username: user.username,
+            email: user.email,
+            role: user.role
+        });
+        setShowEditModal(true);
+    };
+
+    const handleEditChange = (e) => {
+        const value = e.target.value.trim();
+        setEditForm({ ...editForm, [e.target.name]: value });
+    };
+
+    const handleEditSave = async () => {
+        setSaving(true);
+        try {
+            const token = localStorage.getItem('token');
+            const res = await axios.put(`/api/admin/user/${selectedUser._id}`, editForm, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            setUser(res.data.user);
+            setShowEditModal(false);
+            Toast.fire({
+                icon: 'success',
+                title: 'Usuario actualizado correctamente'
+            });
+        } catch (err) {
+            alert('Error al actualizar usuario');
+        } finally {
+            setSaving(false);
+        }
+    };
+
     if (loading) {
         return (
             <Container className="d-flex justify-content-center align-items-center" style={{ minHeight: '50vh' }}>
@@ -124,8 +166,8 @@ const AdminUserDetail = () => {
 
     return (
         <Container className="my-5">
-            <Button 
-                variant="outline-secondary" 
+            <Button
+                variant="outline-secondary"
                 onClick={() => navigate('/admin/users')}
                 className="mb-3"
             >
@@ -139,16 +181,16 @@ const AdminUserDetail = () => {
                         <FaUser className="me-2" />
                         Detalle del Usuario
                     </h4>
-                    <Button 
-                        variant="light" 
+                    <Button
+                        variant="light"
                         size="sm"
-                        onClick={() => navigate(`/admin/users/edit/${user._id}`)}
+                        onClick={() => handleEditClick(user)}
                     >
                         <FaEdit className="me-2" />
                         Editar
                     </Button>
                 </Card.Header>
-                
+
                 <Card.Body>
                     <Tabs
                         activeKey={activeTab}
@@ -183,7 +225,7 @@ const AdminUserDetail = () => {
                                         </ListGroup.Item>
                                     </ListGroup>
                                 </Col>
-                                
+
                                 <Col md={6}>
                                     <Card>
                                         <Card.Header>
@@ -207,7 +249,7 @@ const AdminUserDetail = () => {
                                 </Col>
                             </Row>
                         </Tab>
-                        
+
                         <Tab eventKey="orders" title={`Órdenes (${orders.length})`}>
                             <div className="mt-3">
                                 {orders.length > 0 ? (
@@ -219,6 +261,7 @@ const AdminUserDetail = () => {
                                                     <th>Fecha</th>
                                                     <th>Productos</th>
                                                     <th>Total</th>
+                                                    <th>Estado</th>
                                                     <th>Acciones</th>
                                                 </tr>
                                             </thead>
@@ -231,9 +274,9 @@ const AdminUserDetail = () => {
                                                         <td>${order.total?.toFixed(2)}</td>
                                                         <td>{getStatusBadge(order.status)}</td>
                                                         <td>
-                                                            <Button 
-                                                                variant="outline-primary" 
+                                                            <Button
                                                                 size="sm"
+                                                                variant="outline-primary"
                                                                 onClick={() => navigate(`/admin/orders/${order._id}`)}
                                                             >
                                                                 Ver detalle
@@ -252,7 +295,7 @@ const AdminUserDetail = () => {
                                 )}
                             </div>
                         </Tab>
-                        
+
                         <Tab eventKey="activity" title="Actividad">
                             <div className="mt-3">
                                 <Alert variant="info" className="text-center">
@@ -264,6 +307,53 @@ const AdminUserDetail = () => {
                     </Tabs>
                 </Card.Body>
             </Card>
+
+            <Modal show={showEditModal} onHide={() => setShowEditModal(false)}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Editar Usuario</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <Form>
+                        <Form.Group className="mb-3">
+                            <Form.Label>Usuario</Form.Label>
+                            <Form.Control
+                                type="text"
+                                name="username"
+                                value={editForm.username}
+                                onChange={handleEditChange}
+                            />
+                        </Form.Group>
+                        <Form.Group className="mb-3">
+                            <Form.Label>Email</Form.Label>
+                            <Form.Control
+                                type="email"
+                                name="email"
+                                value={editForm.email}
+                                onChange={handleEditChange}
+                            />
+                        </Form.Group>
+                        <Form.Group className="mb-3">
+                            <Form.Label>Rol</Form.Label>
+                            <Form.Select
+                                name="role"
+                                value={editForm.role}
+                                onChange={handleEditChange}
+                            >
+                                <option value="user">Usuario</option>
+                                <option value="admin">Administrador</option>
+                            </Form.Select>
+                        </Form.Group>
+                    </Form>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={() => setShowEditModal(false)}>
+                        Cancelar
+                    </Button>
+                    <Button variant="primary" onClick={() => { navigate('/admin/users'); handleEditSave(); }} disabled={saving}>
+                        {saving ? 'Guardando...' : 'Guardar'}
+                    </Button>
+                </Modal.Footer>
+            </Modal>
         </Container>
     );
 };

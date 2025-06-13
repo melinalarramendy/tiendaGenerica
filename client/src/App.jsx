@@ -22,6 +22,8 @@ import AdminPanel from './components/admin/AdminPanel';
 import ProductForm from './components/admin/ProductForm';
 import AdminUsersList from './components/admin/AdminUsersList';
 import AdminUserDetail from './components/admin/AdminUserDetail';
+import AdminOrderDetail from './components/admin/AdminOrderDetail';
+import AdminUserCreate from './components/admin/AdminUserCreate';
 
 
 function App() {
@@ -56,6 +58,8 @@ function App() {
           <Route path="/admin/products/edit/:id" element={<ProductForm />} />
           <Route path="/admin/users" element={<AdminUsersList />} />
           <Route path="/admin/users/:id" element={<AdminUserDetail />} />
+          <Route path="/admin/orders/:id" element={<AdminOrderDetail />} />
+          <Route path="/admin/users/new" element={<AdminUserCreate />} />
 
         </Route>
 

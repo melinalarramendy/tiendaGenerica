@@ -463,15 +463,121 @@ def delete_product(product_id):
 @admin_required
 def get_user_orders(user_id):
     try:
-        if not ObjectId.is_valid(user_id):
-            return jsonify({"success": False, "error": "ID de usuario no válido"}), 400
-
-        orders = list(db['orders'].find({"user_id": user_id}))
-        for order in orders:
-            order['_id'] = str(order['_id'])
+        orders = []
+        try:
+            orders = list(db['orders'].find({"user_id": ObjectId(user_id)}))
+        except Exception:
+            pass
+        if not orders:
+            orders = list(db['orders'].find({"user_id": user_id}))
+        orders = convert_objectid(orders)
         return jsonify({"success": True, "orders": orders}), 200
+    except Exception as e:
+        print("Error en get_user_orders:", e)
+        return jsonify({"success": False, "error": str(e)}), 500
+    
+
+@app.route('/admin/user/<user_id>', methods=['PUT'])
+@admin_required
+def update_user_admin(user_id):
+    try:
+        if not request.is_json:
+            return jsonify({"success": False, "error": "Request debe ser JSON"}), 400
+
+        data = request.get_json()
+        print(" Datos recibidos:", data)
+
+        update_fields = {}
+
+        for field in ['username', 'email', 'role']:
+            if field in data and data[field] is not None:
+                value = data[field].strip() if isinstance(data[field], str) else data[field]
+                update_fields[field] = value
+
+        print(" Campos a actualizar:", update_fields)
+
+        if 'role' in update_fields and update_fields['role'] not in ['admin', 'user']:
+            return jsonify({"success": False, "error": "Rol no válido"}), 400
+
+        if not update_fields:
+            return jsonify({"success": False, "error": "No hay campos para actualizar"}), 400
+
+        result = db['users'].update_one(
+            {"_id": ObjectId(user_id)},
+            {"$set": update_fields}
+        )
+
+        print(f" Resultado - matched: {result.matched_count}, modified: {result.modified_count}")
+
+        if result.matched_count == 0:
+            return jsonify({"success": False, "error": "Usuario no encontrado"}), 404
+
+        updated_user = db['users'].find_one({"_id": ObjectId(user_id)})
+        updated_user['_id'] = str(updated_user['_id'])
+        del updated_user['password']
+
+        return jsonify({"success": True, "user": updated_user}), 200
+
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
+@app.route('/admin/orders/<order_id>', methods=['GET'])
+@admin_required
+def get_order_by_id(order_id):
+    try:
+        from bson import ObjectId
+        order = db['orders'].find_one({"_id": ObjectId(order_id)})
+        if not order:
+            return jsonify({"success": False, "error": "Orden no encontrada"}), 404
+
+        order = convert_objectid(order)
+        return jsonify({"success": True, "order": order}), 200
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+    
+    
+@app.route('/admin/user', methods=['POST'])
+@admin_required
+def create_user_admin():
+    try:
+        if not request.is_json:
+            return jsonify({"success": False, "error": "Request debe ser JSON"}), 400
+
+        data = request.get_json()
+        required_fields = ['username', 'email', 'password', 'role']
+        for field in required_fields:
+            if field not in data or not data[field]:
+                return jsonify({"success": False, "error": f"Campo requerido faltante: {field}"}), 400
+
+        if db['users'].find_one({"email": data['email']}):
+            return jsonify({"success": False, "error": "El email ya está registrado"}), 400
+
+        hashed_password = generate_password_hash(data['password'])
+
+        user = {
+            "username": data['username'],
+            "email": data['email'],
+            "password": hashed_password,
+            "role": data['role']
+        }
+        result = db['users'].insert_one(user)
+        user['_id'] = str(result.inserted_id)
+        del user['password']  
+
+        return jsonify({"success": True, "user": user}), 201
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+    
+def convert_objectid(obj):
+    if isinstance(obj, list):
+        return [convert_objectid(item) for item in obj]
+    elif isinstance(obj, dict):
+        return {k: convert_objectid(v) for k, v in obj.items()}
+    elif isinstance(obj, ObjectId):
+        return str(obj)
+    else:
+        return obj
+    
+    
 if __name__ == '__main__':
     app.run(debug=True, port=5005)
